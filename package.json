@@ -1,0 +1,1 @@
+{"name":"stellaris-tech-tree","private":true,"dependencies":{"elkjs":"^0.11.1"},"devDependencies":{"playwright":"^1.60.0"}}
