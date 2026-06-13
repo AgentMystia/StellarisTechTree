@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>群星 Stellaris · 科技树</title>
+<title data-i18n="title.page">群星 Stellaris · 科技树</title>
 <link rel="stylesheet" href="css/main.css">
 <link rel="stylesheet" href="css/graph.css">
 </head>
@@ -14,72 +14,71 @@
     <div class="brand">
       <span class="brand-logo">✦</span>
       <div class="brand-text">
-        <h1>群星 · 科技树</h1>
+        <h1 data-i18n="brand.title">群星 · 科技树</h1>
         <span class="brand-sub">STELLARIS TECHNOLOGY TREE</span>
       </div>
     </div>
 
     <nav class="area-tabs" id="areaTabs">
       <button class="area-tab" data-area="physics" style="--c:#4FC3F7">
-        <span class="at-glyph">⚛</span><span>物理学</span><span class="at-count" id="cnt-physics"></span>
+        <span class="at-glyph">⚛</span><span data-i18n="area.physics">物理学</span><span class="at-count" id="cnt-physics"></span>
       </button>
       <button class="area-tab" data-area="society" style="--c:#66BB6A">
-        <span class="at-glyph">❀</span><span>社会学</span><span class="at-count" id="cnt-society"></span>
+        <span class="at-glyph">❀</span><span data-i18n="area.society">社会学</span><span class="at-count" id="cnt-society"></span>
       </button>
       <button class="area-tab" data-area="engineering" style="--c:#FFA726">
-        <span class="at-glyph">⚙</span><span>工程学</span><span class="at-count" id="cnt-engineering"></span>
+        <span class="at-glyph">⚙</span><span data-i18n="area.engineering">工程学</span><span class="at-count" id="cnt-engineering"></span>
       </button>
     </nav>
 
     <div class="topbar-right">
-      <a class="ai-badge" href="https://huggingface.co/zai-org" target="_blank" rel="noopener" title="本项目全程由 GLM-5.2 自主完成">
+      <a class="ai-badge" href="https://huggingface.co/zai-org" target="_blank" rel="noopener" data-i18n-title="ai.badge.tooltip" title="本项目全程由 GLM-5.2 自主完成">
         <span class="ai-dot"></span>GLM-5.2
       </a>
+      <button class="lang-toggle" id="langToggle" data-i18n="lang.toggle" data-i18n-title="lang.toggle.tooltip" title="Switch to English">EN</button>
       <div class="search-box">
         <span class="search-icon">🔍</span>
-        <input id="searchInput" type="search" placeholder="搜索科技（中文 / ID）…" autocomplete="off">
+        <input id="searchInput" type="search" data-i18n-placeholder="search.placeholder" placeholder="搜索科技（中文 / ID）…" autocomplete="off">
       </div>
     </div>
   </header>
 
   <div class="layout">
-    <!-- 侧栏：筛选 -->
     <aside class="sidebar" id="sidebar">
       <div class="sb-section">
-        <h3>层级 Tier</h3>
+        <h3 data-i18n="sidebar.tier">层级 Tier</h3>
         <div class="tier-chips" id="tierChips"></div>
       </div>
 
       <div class="sb-section">
-        <h3>类别 Category</h3>
+        <h3 data-i18n="sidebar.category">类别 Category</h3>
         <div class="cat-list" id="catList"></div>
       </div>
 
       <div class="sb-section">
-        <h3>标记</h3>
-        <label class="chk"><input type="checkbox" data-flag="is_rare"><span class="dot rare"></span>稀有</label>
-        <label class="chk"><input type="checkbox" data-flag="is_dangerous"><span class="dot danger"></span>危险</label>
-        <label class="chk"><input type="checkbox" data-flag="is_start_tech"><span class="dot start"></span>起始科技</label>
-        <label class="chk"><input type="checkbox" data-flag="is_reverse_engineerable"><span class="dot rev"></span>可逆向工程</label>
+        <h3 data-i18n="sidebar.flags">标记</h3>
+        <label class="chk"><input type="checkbox" data-flag="is_rare"><span class="dot rare"></span><span data-i18n="flag.rare">稀有</span></label>
+        <label class="chk"><input type="checkbox" data-flag="is_dangerous"><span class="dot danger"></span><span data-i18n="flag.dangerous">危险</span></label>
+        <label class="chk"><input type="checkbox" data-flag="is_start_tech"><span class="dot start"></span><span data-i18n="flag.start">起始科技</span></label>
+        <label class="chk"><input type="checkbox" data-flag="is_reverse_engineerable"><span class="dot rev"></span><span data-i18n="flag.reverse">可逆向工程</span></label>
       </div>
 
       <div class="sb-section">
-        <h3>显示</h3>
-        <label class="chk"><input type="checkbox" id="showRepeatable">显示可重复科技</label>
-        <label class="chk"><input type="checkbox" id="dimUnrelated" checked>淡化无关节点</label>
+        <h3 data-i18n="sidebar.display">显示</h3>
+        <label class="chk"><input type="checkbox" id="showRepeatable"><span data-i18n="display.repeatable">显示可重复科技</span></label>
+        <label class="chk"><input type="checkbox" id="dimUnrelated" checked><span data-i18n="display.dimUnrelated">淡化无关节点</span></label>
       </div>
 
       <div class="sb-section sb-stats" id="sbStats"></div>
     </aside>
 
-    <!-- 主图区 -->
     <main class="main">
       <div class="graph-toolbar">
-        <span class="graph-title" id="graphTitle">物理学 · PHYSICS RESEARCH</span>
+        <span class="graph-title" id="graphTitle"></span>
         <div class="graph-tools">
-          <button id="btnFit" title="适应窗口">⤢ 适应</button>
-          <button id="btnZoomIn" title="放大">＋</button>
-          <button id="btnZoomOut" title="缩小">－</button>
+          <button id="btnFit" data-i18n-title="toolbar.fit.tooltip" title="适应窗口"><span class="ico">⤢</span> <span data-i18n="toolbar.fit">适应</span></button>
+          <button id="btnZoomIn" data-i18n-title="toolbar.zoomIn.tooltip" title="放大">＋</button>
+          <button id="btnZoomOut" data-i18n-title="toolbar.zoomOut.tooltip" title="缩小">－</button>
           <span class="zoom-level" id="zoomLevel">100%</span>
         </div>
       </div>
@@ -89,21 +88,19 @@
           <svg class="edge-layer" id="edgeLayer"></svg>
           <div class="node-layer" id="nodeLayer"></div>
         </div>
-        <div class="graph-hint">拖拽平移 · 滚轮缩放 · 点击节点查看详情</div>
+        <div class="graph-hint" data-i18n="graph.hint">拖拽平移 · 滚轮缩放 · 点击节点查看详情</div>
       </div>
 
-      <!-- 可重复科技抽屉（默认折叠） -->
       <div class="repeatables-drawer" id="repeatDrawer">
         <div class="rd-header" id="rdHeader">
-          <span>可重复科技（REPEATABLE）</span>
-          <span class="rd-toggle" id="rdToggle">展开 ▾</span>
+          <span data-i18n="drawer.title">可重复科技（REPEATABLE）</span>
+          <span class="rd-toggle" id="rdToggle" data-i18n="drawer.expand">展开 ▾</span>
         </div>
         <div class="rd-body" id="rdBody"></div>
       </div>
     </main>
   </div>
 
-  <!-- 详情面板 -->
   <aside class="detail-panel" id="detailPanel">
     <button class="detail-close" id="detailClose">✕</button>
     <div class="detail-content" id="detailContent"></div>

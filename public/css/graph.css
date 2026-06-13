@@ -52,10 +52,10 @@
 .node.rare { --c: var(--rare); }
 .node.danger { --c: var(--danger); }
 .node.start { border-color: color-mix(in srgb, var(--start) 50%, transparent); }
-.node.start::after {
-  content: "起始"; position: absolute; top: 3px; right: 5px;
+.node .start-mark {
+  position: absolute; top: 3px; right: 5px;
   font-size: 8.5px; color: var(--start); letter-spacing: .5px;
-  background: rgba(0,0,0,0.4); padding: 1px 4px; border-radius: 3px;
+  background: rgba(0,0,0,0.4); padding: 1px 4px; border-radius: 3px; z-index: 2;
 }
 
 .node-icon {

@@ -1,4 +1,6 @@
 // 搜索 + 筛选控件。维护 filter 状态，变化时回调 app 重新应用。
+import { getLang, onLangChange } from "./i18n.js";
+
 const $ = (id) => document.getElementById(id);
 
 const state = {
@@ -7,11 +9,17 @@ const state = {
   flags: new Set(),
   repeatable: false,
 };
+let cats = []; // 类别数据（含 name / name_en）
+
+function catLabel(c) {
+  return getLang() === "en" ? (c.name_en || c.name) : (c.name || c.name_en);
+}
 
 let callbacks = {};
 
 export function initFilters({ categories, onChange, onSearch, onToggleRepeatable }) {
   callbacks = { onChange, onSearch, onToggleRepeatable };
+  cats = categories || [];
 
   // 层级 chips
   const tc = $("tierChips");
@@ -32,11 +40,11 @@ export function initFilters({ categories, onChange, onSearch, onToggleRepeatable
   // 类别列表
   const cl = $("catList");
   cl.innerHTML = "";
-  for (const c of categories) {
+  for (const c of cats) {
     const row = document.createElement("div");
     row.className = "cat-item";
     row.dataset.cat = c.id;
-    row.innerHTML = `<span class="cat-dot" style="background:${areaColor()}"></span><span>${escapeHtml(c.name)}</span><span class="cat-count" data-count="${c.id}"></span>`;
+    row.innerHTML = `<span class="cat-dot" style="background:${areaColor()}"></span><span class="cat-name">${escapeHtml(catLabel(c))}</span><span class="cat-count" data-count="${c.id}"></span>`;
     row.addEventListener("click", () => {
       if (state.cats.has(c.id)) { state.cats.delete(c.id); row.classList.remove("active"); }
       else { state.cats.add(c.id); row.classList.add("active"); }
@@ -44,6 +52,7 @@ export function initFilters({ categories, onChange, onSearch, onToggleRepeatable
     });
     cl.appendChild(row);
   }
+  onLangChange(updateCatNames);
 
   // 标记 checkbox
   document.querySelectorAll('.chk input[data-flag]').forEach((box) => {
@@ -90,6 +99,14 @@ export function updateCategoryCounts(counts) {
     const el = document.querySelector(`.cat-count[data-count="${id}"]`);
     if (el) el.textContent = n;
   }
+}
+
+function updateCatNames() {
+  document.querySelectorAll(".cat-item").forEach((row) => {
+    const c = cats.find((x) => x.id === row.dataset.cat);
+    const nm = row.querySelector(".cat-name");
+    if (c && nm) nm.textContent = catLabel(c);
+  });
 }
 
 export function clearAll() {

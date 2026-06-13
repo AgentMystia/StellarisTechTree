@@ -1,5 +1,7 @@
 // 科技树核心渲染：HTML 节点卡片 + SVG 边，CSS transform 缩放平移。
 // 模块级单例状态。
+import { nameOf, t as tr, onLangChange } from "./i18n.js";
+
 const $ = (id) => document.getElementById(id);
 
 let viewport, world, edgeLayer, nodeLayer;
@@ -13,6 +15,7 @@ let edges = [];          // 边数组
 let edgeEls = [];        // 边 path 元素
 let prereqsOf = new Map();// id → Set(前置 id)
 let unlocksOf = new Map();// id → Set(解锁 id)
+let cardEls = [];         // 可重复卡片 [{el, tech}]
 
 let scale = 1, tx = 0, ty = 0;
 let worldW = 0, worldH = 0;
@@ -30,6 +33,7 @@ export function initGraph({ onNodeClick, onNodeHover }) {
   onNodeClickCb = onNodeClick || onNodeClickCb;
   onNodeHoverCb = onNodeHover || onNodeHoverCb;
   bindPanZoom();
+  onLangChange(applyLang);
 }
 
 function applyTransform() {
@@ -165,18 +169,19 @@ export function render(areaData, { color, iconMap }) {
 
     const ic = iconStyle(t, iconMap);
     const flags = [];
-    if (t.is_rare) flags.push(`<span class="fl rare" title="稀有"></span>`);
-    if (t.is_dangerous) flags.push(`<span class="fl danger" title="危险"></span>`);
+    if (t.is_rare) flags.push(`<span class="fl rare" title="${tr("flag.rare")}"></span>`);
+    if (t.is_dangerous) flags.push(`<span class="fl danger" title="${tr("flag.dangerous")}"></span>`);
 
     el.innerHTML = `
       <div class="node-icon" style="${ic.bg}">${ic.missing ? "?" : ""}</div>
       <div class="node-body">
-        <div class="node-name">${escapeHtml(t.name)}</div>
+        <div class="node-name">${escapeHtml(nameOf(t))}</div>
         <div class="node-meta">
           <span class="node-cost">⚡${t.cost != null ? formatNum(t.cost) : "—"}</span>
           <span class="node-tier">T${t.tier}</span>
         </div>
       </div>
+      ${t.is_start_tech ? `<span class="start-mark">${tr("node.startMark")}</span>` : ""}
       ${flags.length ? `<div class="node-flag">${flags.join("")}</div>` : ""}
     `;
 
@@ -253,6 +258,7 @@ export function renderRepeatables(areaData, { color, iconMap }, onCardClick) {
   const body = $("rdBody");
   body.innerHTML = "";
   document.documentElement.style.setProperty("--area-color", color);
+  cardEls = [];
   for (const t of areaData.repeatables || []) {
     const card = document.createElement("div");
     card.className = "rd-card";
@@ -260,11 +266,30 @@ export function renderRepeatables(areaData, { color, iconMap }, onCardClick) {
     card.innerHTML = `
       <div class="node-icon" style="${ic.bg}">${ic.missing ? "?" : ""}</div>
       <div class="node-body">
-        <div class="node-name">${escapeHtml(t.name)}</div>
+        <div class="node-name">${escapeHtml(nameOf(t))}</div>
         <div class="node-meta"><span class="node-cost">⚡${t.cost != null ? formatNum(t.cost) : "—"}</span><span class="node-tier">T${t.tier}</span></div>
       </div>`;
     card.addEventListener("click", () => onCardClick(t));
     body.appendChild(card);
+    cardEls.push({ el: card, tech: t });
+  }
+}
+
+// 语言切换：刷新节点/卡片文字（保留 DOM 与布局）
+export function applyLang() {
+  for (const [id, el] of elMap) {
+    const tech = nodeMap.get(id);
+    if (!tech) continue;
+    const nm = el.querySelector(".node-name");
+    if (nm) nm.textContent = nameOf(tech);
+    const sm = el.querySelector(".start-mark");
+    if (sm) sm.textContent = tr("node.startMark");
+    const fr = el.querySelector(".fl.rare"); if (fr) fr.title = tr("flag.rare");
+    const fd = el.querySelector(".fl.danger"); if (fd) fd.title = tr("flag.dangerous");
+  }
+  for (const { el, tech } of cardEls) {
+    const nm = el.querySelector(".node-name");
+    if (nm) nm.textContent = nameOf(tech);
   }
 }
 

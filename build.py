@@ -30,42 +30,44 @@ ASSETS = PUBLIC / "assets"
 TECH_DIR = GAME / "common" / "technology"
 SV_DIR = GAME / "common" / "scripted_variables"
 LOC_DIR = GAME / "localisation" / "simp_chinese"
+LOC_DIR_EN = GAME / "localisation" / "english"
 ICON_DIR = GAME / "gfx" / "interface" / "icons" / "technologies"
 
 AREAS = ("physics", "society", "engineering")
 
-# 文件名 → DLC/来源 显示名（用于详情面板标注来源）
+# 文件名 → DLC/来源 显示名（中英双语，用于详情面板标注来源）
 DLC_MAP = [
-    (r"_phys_tech\.txt$|_soc_tech\.txt$|_eng_tech\.txt$|_megastructures\.txt$|_strategic_resources", "core"),
-    (r"ancient_relics", "远古遗物 Ancient Relics"),
-    (r"apocalypse", "启示录 Apocalypse"),
-    (r"astral_planes", "星象位面 Astral Planes"),
-    (r"biogenesis", "生命起源 Biogenesis"),
-    (r"cosmic_storm", "宇宙风暴 Cosmic Storms"),
-    (r"distant_stars", "遥远群星 Distant Stars"),
-    (r"extreme_frontiers", "极限边疆"),
-    (r"fallen_empire", "堕落帝国"),
-    (r"first_contact", "第一次接触 First Contact"),
-    (r"grand_archive", "大档案馆 Grand Archive"),
-    (r"horizonsignal", "地平线信号 Horizon Signal"),
-    (r"leviathans", "利维坦 Leviathans"),
-    (r"machine_age", "机械纪元 Machine Age"),
-    (r"megacorp", "巨型企业 Megacorp"),
-    (r"overlord", "霸主 Overlord"),
-    (r"plantoids", "植物族 Plantoids"),
-    (r"shroud", "虚境 Shroud"),
-    (r"strange_worlds", "奇异世界"),
-    (r"synthetic_dawn", "机械黎明 Synthetic Dawn"),
-    (r"_weapon_tech\.txt$", "core"),  # 武器归入 core
-    (r"_repeatable", "core"),          # 可重复归入 core
+    (r"_phys_tech\.txt$|_soc_tech\.txt$|_eng_tech\.txt$|_megastructures\.txt$|_strategic_resources", "原版", "Core"),
+    (r"ancient_relics", "远古遗物", "Ancient Relics"),
+    (r"apocalypse", "启示录", "Apocalypse"),
+    (r"astral_planes", "星象位面", "Astral Planes"),
+    (r"biogenesis", "生命起源", "Biogenesis"),
+    (r"cosmic_storm", "宇宙风暴", "Cosmic Storms"),
+    (r"distant_stars", "遥远群星", "Distant Stars"),
+    (r"extreme_frontiers", "极限边疆", "Extreme Frontiers"),
+    (r"fallen_empire", "堕落帝国", "Fallen Empire"),
+    (r"first_contact", "第一次接触", "First Contact"),
+    (r"grand_archive", "大档案馆", "Grand Archive"),
+    (r"horizonsignal", "地平线信号", "Horizon Signal"),
+    (r"leviathans", "利维坦", "Leviathans"),
+    (r"machine_age", "机械纪元", "Machine Age"),
+    (r"megacorp", "巨型企业", "Megacorp"),
+    (r"overlord", "霸主", "Overlord"),
+    (r"plantoids", "植物族", "Plantoids"),
+    (r"shroud", "虚境", "Shroud"),
+    (r"strange_worlds", "奇异世界", "Strange Worlds"),
+    (r"synthetic_dawn", "机械黎明", "Synthetic Dawn"),
+    (r"_weapon_tech\.txt$", "原版", "Core"),  # 武器归入 Core
+    (r"_repeatable", "原版", "Core"),          # 可重复归入 Core
 ]
+CORE_DLC = {"zh": "原版", "en": "Core"}
 
 
-def dlc_from_filename(name: str) -> str:
-    for pat, label in DLC_MAP:
+def dlc_from_filename(name: str) -> dict:
+    for pat, zh, en in DLC_MAP:
         if re.search(pat, name):
-            return label
-    return "core"
+            return {"zh": zh, "en": en}
+    return dict(CORE_DLC)
 
 
 # --------------------------------------------------------------------------- #
@@ -349,11 +351,11 @@ SECTION_RE = re.compile(r"\['([A-Za-z0-9_:]+)'\]")
 DOLLAR_RE = re.compile(r'\$([A-Za-z0-9_]+)\$')
 
 
-def load_loc_raw() -> dict:
+def load_loc_raw(loc_dir=LOC_DIR) -> dict:
     raw = {}
-    if not LOC_DIR.exists():
+    if not loc_dir.exists():
         return raw
-    for f in sorted(LOC_DIR.glob('*.yml')):
+    for f in sorted(loc_dir.glob('*.yml')):
         try:
             text = f.read_text(encoding='utf-8-sig', errors='replace')
         except OSError:
@@ -523,7 +525,7 @@ def load_tiers(macros):
     return out
 
 
-def load_categories(loc):
+def load_categories(loc, loc_en):
     f = TECH_DIR / "category" / "00_category.txt"
     out = []
     if f.exists():
@@ -535,6 +537,8 @@ def load_categories(loc):
                 "id": k,
                 "name": process_text(loc.get(k, k), loc),
                 "desc": process_text(loc.get(k + "_desc", ""), loc),
+                "name_en": process_text(loc_en.get(k, k), loc_en),
+                "desc_en": process_text(loc_en.get(k + "_desc", ""), loc_en),
             })
     return out
 
@@ -554,11 +558,13 @@ def main():
     techs = parse_all_techs(macros)
     print(f"  科技：{len(techs)} 个")
 
-    print("▶ 解析中文本地化 ...")
-    loc = load_loc_raw()
-    print(f"  本地化键：{len(loc)} 个")
-    # 覆盖名称与描述
+    print("▶ 解析本地化（中 / 英）...")
+    loc = load_loc_raw(LOC_DIR)           # 简体中文
+    loc_en = load_loc_raw(LOC_DIR_EN)     # English
+    print(f"  中文键：{len(loc)} 个，英文键：{len(loc_en)} 个")
+    # 覆盖名称与描述（双语）
     missing_name = 0
+    missing_name_en = 0
     for t in techs:
         name = process_text(loc.get(t["id"]), loc)
         desc = process_text(loc.get(t["id"] + "_desc"), loc)
@@ -567,19 +573,28 @@ def main():
         else:
             missing_name += 1
         t["desc"] = desc
-        # modifier 本地化名（尽力）
+        name_en = process_text(loc_en.get(t["id"]), loc_en)
+        if name_en:
+            t["name_en"] = name_en
+        else:
+            missing_name_en += 1
+            t["name_en"] = t["id"]
+        t["desc_en"] = process_text(loc_en.get(t["id"] + "_desc"), loc_en)
+        # modifier 本地化名（双语，尽力）
         for m in t["modifier"]:
             mk = "mod_" + m["key"]
             if mk in loc:
                 m["name"] = process_text(loc[mk], loc)
-    print(f"  缺名称：{missing_name}")
+            if mk in loc_en:
+                m["name_en"] = process_text(loc_en[mk], loc_en)
+    print(f"  缺中文名：{missing_name}，缺英文名：{missing_name_en}")
 
     print("▶ 转换图标 (DDS → 雪碧图) ...")
     icon_map, cat_map = build_sprites(techs)
 
     print("▶ 生成 tier/category 元数据 ...")
     tiers = load_tiers(macros)
-    categories = load_categories(loc)
+    categories = load_categories(loc, loc_en)
 
     # --- 统计与校验 ---
     by_area = {a: [t for t in techs if t["area"] == a] for a in AREAS}
